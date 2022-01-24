@@ -8,7 +8,7 @@ En esta carpeta se encuentra el código que se deberá de subir al Arduino.
 - Arduino IDE (Link)
 - MicroSD con FAT32
 
-![ARDUINO_USB](img/atmega32u3.jpg)
+![ARDUINO_USB](img/atmega32u4.jpg)
 
 
 ## How to

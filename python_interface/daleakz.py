@@ -76,14 +76,6 @@ class FileManager:
             f.write(base64.b64decode(data_content))
         
         self.usb.close()
-
-    def generate_random_name(self, str_len):
-        word_list = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        name = ""
-        for i in range(str_len):
-            name += word_list[random.randint(0, 200) % len(word_list)]
-        
-        return name
     
     # List all the files in SD
     def list_files(self, file_database):
@@ -102,6 +94,22 @@ class FileManager:
         print("--------------------------")
         
         self.usb.close()
+    
+    # Remove a file in SD
+    def remove_file(self, file_name):
+        result = self.usb.remove_file(file_name)
+        self.usb.close()
+        return "remove_ok" in result
+
+
+    # Generate a random name using OS system time as SEED
+    def generate_random_name(self, str_len):
+        word_list = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        name = ""
+        for i in range(str_len):
+            name += word_list[random.randint(0, 200) % len(word_list)]
+        
+        return name
 
 class USBController:
 
@@ -126,6 +134,12 @@ class USBController:
         self.arduino.write(command)
         return self.arduino.readline().decode("utf-8")
     
+    # Send the remove command and returns its value
+    def remove_file(self, file_name):
+        command = ("remove " + file_name + "\n").encode("utf-8")
+        self.arduino.write(command)
+        return self.arduino.readline().decode("utf-8")
+
     # Close the arduino connection
     def close(self):
         self.arduino.close()
@@ -154,7 +168,7 @@ print()
 
 pr_parser = argparse.ArgumentParser(description="Send or receive files to Arduino using COM Port")
 pr_parser.add_argument("action",
-                        metavar="read|write|list",
+                        metavar="read|write|list|remove",
                         type=str,
                         help="action you would like to use")
 pr_parser.add_argument("-f",
@@ -187,6 +201,14 @@ try:
 
     if args.action == "list":
         file_manager.list_files(FILE_DIC)
+    
+    if args.action == "remove":
+        result = file_manager.remove_file(FILE_DIC.get(args.f, args.f))
+
+        if result:
+            print("[+] File removed from SD")
+            if args.f in FILE_DIC.keys():
+                FILE_DIC.pop(args.f)
                     
     file_database.write_json_file_db(FILE_DIC)
 except Exception as e:
